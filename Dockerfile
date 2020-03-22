@@ -5,7 +5,7 @@ FROM rootproject/root-conda:6.18.04
 USER root
 
 # This sets the default working directory when a container is launched from the image
-WORKDIR /home/docker/DeepLIFTforHEP
+WORKDIR /home/docker/
 
 # Run as docker user by default when the container starts up
 # USER docker
@@ -23,3 +23,4 @@ RUN mv mc_* atlas-open-data
 # COMPILER=$(root-config --cxx) &&  \
 # FLAGS=$(root-config --cflags --libs) &&  \
 # $COMPILER -g -std=c++11 -O3 -Wall -Wextra -Wpedantic -o skim skim.cxx $FLAGS
+
