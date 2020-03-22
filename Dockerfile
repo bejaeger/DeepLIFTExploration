@@ -5,7 +5,7 @@ FROM rootproject/root-conda:6.18.04
 USER root
 
 # This sets the default working directory when a container is launched from the image
-WORKDIR /home/docker
+WORKDIR /home/docker/DeepLIFTforHEP
 
 # Run as docker user by default when the container starts up
 # USER docker
@@ -14,10 +14,12 @@ RUN wget https://cernbox.cern.ch/index.php/s/e4A8pcCmzBei3Pc/download --output-d
 RUN wget https://cernbox.cern.ch/index.php/s/UAf9leEd6nf6t1N/download --output-document=mc_363492.llvv.exactly2lep.root
 RUN wget https://cernbox.cern.ch/index.php/s/C0gb451mNtemENl/download --output-document=mc_410000.ttbar_lep.exactly2lep.root
 
+# add samples in sample directory
 RUN mkdir atlas-open-data
 RUN mv mc_* atlas-open-data
 
-COPY . .
+# copy code in DeepLIFTforHEP directory
+COPY . DeepLIFTforHEP/
 
 # Compile an executable named 'skim' from the skim.cxx source file
 # RUN echo ">>> Compile skimming executable ..." &&  \
