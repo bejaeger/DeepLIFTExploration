@@ -5,7 +5,7 @@ FROM rootproject/root-conda:6.18.04
 USER root
 
 # This sets the default working directory when a container is launched from the image
-WORKDIR /home/docker/
+WORKDIR /home/
 
 # get samples in sample directory
 RUN wget https://cernbox.cern.ch/index.php/s/e4A8pcCmzBei3Pc/download --output-document=mc_345323.VBFH125_WW2lep.exactly2lep.root
@@ -30,8 +30,7 @@ RUN pip install --upgrade pip setuptools && \
 RUN echo 'export PS1="\[\033[01;31m\][Container] \[\033[00m\]${debian_chroot:+($debian_chroot)}\[\033[0;31m\]\u@\h\[\033[37m\]:\[\033[01;37m\]\w\[\033[00m\] "' >> /root/.bashrc
 
 # change workdir to DeepLIFTforHEP
-WORKDIR /home/docker/DeepLIFTforHEP
-
+WORKDIR /home/DeepLIFTforHEP
 
 # Compile an executable named 'skim' from the skim.cxx source file
 # RUN echo ">>> Compile skimming executable ..." &&  \

@@ -10,11 +10,12 @@ git clone https://gitlab.cern.ch/bejaeger/DeepLIFTforHEP.git
 cd DeepLIFTforHEP
 source setup.sh # defines a few aliases and env variables
 
-# run uploaded docker image
-runimg # runs the container
-source setup.sh # manually sourcing currently needed
+# pull docker image uploaded docker image
+pullimg # pull latest container from gitlab
+runcont # runs the container
 
-# run visualize test script (inside container)
+# inside container, run visualize script
+source setup.sh # manually sourcing is currently still needed
 cd scripts
 ./visualize.py # this should produce a test png file in a new directory called 'output/'.
 ```
