@@ -22,6 +22,7 @@ RUN pip install --upgrade pip setuptools && \
     pip install matplotlib && \
     pip install pandas && \
     pip install atlasify && \ 
+    pip install deeplift && \ 
     pip install sklearn
 
 # Run as docker user by default when the container starts up
