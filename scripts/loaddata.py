@@ -2,6 +2,24 @@ import numpy as np
 import pandas as pd
 import uproot
 import configparser
+from variables import *
+
+def getDataInDict(cfg, section = "train"):
+    """
+    retrieve training data in dictionary 
+    """
+    dset = {}
+    for processName, filepath in cfg["samplePaths"].items():
+        if filepath:
+            print("Loading data for process '{}' from filepath '{}' " \
+                  "".format(processName,filepath))
+            df = loadData(filepath, cfg["variables"], selections = cfg["preselections"],
+                          nEvents = cfg["nEvents"])
+            df = addVariables(df, cfg["variables_to_build"])
+            df = makeSelections(df, cfg["selections"])
+            dset[processName] = df
+
+    return dset
 
 def readCfg(configPath, section = "train"):
     """
@@ -19,7 +37,10 @@ def readCfg(configPath, section = "train"):
     cfg["variables"] = config["common"]["variables"].split(",")
     cfg["variables_to_build"] = config["common"]["variables_to_build"].split(",")
     cfg["training_variables"] = config["common"]["training_variables"].split(",")
+    cfg["preselections"] = [i[1].split(",") for i in config["preselections"].items()]
     cfg["selections"] = [i[1].split(",") for i in config["selections"].items()]
+    if section == "train":
+        cfg["trainingFraction"] = config[section]["trainingFraction"]
     return cfg
 
 def loadData(filepath, variables, selections = [[]],
@@ -44,7 +65,8 @@ def loadData(filepath, variables, selections = [[]],
 
     # make selections
     for sel in selections:
-        df = df[ eval("df['"+sel[0]+"'] "+sel[1]+" "+str(sel[2]))]
+        if sel:
+            df = df[ eval("df['"+sel[0]+"'] "+sel[1]+" "+str(sel[2]))]
 
     # remove variables that were only used for selecting data
     for var in vars_for_selection_only:

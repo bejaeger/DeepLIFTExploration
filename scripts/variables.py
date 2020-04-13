@@ -92,22 +92,29 @@ class VariableConstructor:
         pass
     
     
-
-    
-def buildVariable(name, df):
+def buildVariable(df, name):
     constructor = VariableConstructor()
     func = getattr(constructor, name)
     df_var = func(df)
     return df_var
     
-def addVariable(name, df):
+def addVariable(df, name):
     df_var = buildVariable(name, df)
     df = pd.concat([df, df_var], axis=1)
     return df
 
-def addVariables(names, df):
+def addVariables(df, names):
     for n in names:
-        df_var = buildVariable(n, df)
+        df_var = buildVariable(df, n)
         df = pd.concat([df, df_var], axis=1)
+    return df
+
+def makeSelections(df, selections = [[]]):
+    """
+    Make some more selections on dataframe
+    """
+    for sel in selections:
+        if sel:
+            df = df[ eval("df['"+sel[0]+"'] "+sel[1]+" "+str(sel[2]))]
     return df
 
