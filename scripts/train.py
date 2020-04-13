@@ -14,45 +14,26 @@ import matplotlib.pyplot as plt
 from atlasify import atlasify
 from sklearn import preprocessing
 
-# X = dataset[:,0:8]
-# y = dataset[:,8]
 #####################################################
-# Configuration
+# Read configuration and load data
 
-#nEvents = 1000000
-nEvents =  -1
-filepathVBF = "../../atlas-open-data/mc_345323.VBFH125_WW2lep.exactly2lep.root"
-filepathWW = "../../atlas-open-data/mc_363492.llvv.exactly2lep.root"
-filepathTop = "../../atlas-open-data/mc_410000.ttbar_lep.exactly2lep.root"
-filepathWW = ""
-samples = {"VBF":filepathVBF, "WW":filepathWW, "Top":filepathTop}
-
-variables = ["mcWeight", "SumWeights", "XSection", "lep_pt", "jet_pt", "met_et", "lep_phi", "lep_eta", "jet_eta", "jet_phi"]
-selections = [["jet_n", "==", 2]]
-
-variables_to_build = ["leadLepPt", "subleadLepPt", "DPhill", "Mll",
-                      "DEtajj", "PtTotal", "Mjj"]
-
-training_variables = ["leadLepPt", "subleadLepPt", "DPhill", "PtTotal", "met_et", "Mll", "DEtajj", "Mjj"]
-
-#####################################################
-# load data
+cfg = readCfg("config.cfg", section="train")
 dset = {}
-for processName, filepath in samples.items():
+for processName, filepath in cfg["samplePaths"].items():
     if filepath:
         print("Loading data for process '{}' from filepath '{}' " \
               "".format(processName,filepath))
-        df = loadData(filepath, variables, selections = selections,
-                      nEvents = nEvents)
-        df = addVariables(variables_to_build, df)
+        df = loadData(filepath, cfg["variables"], selections = cfg["selections"],
+                      nEvents = cfg["nEvents"])
+        df = addVariables(cfg["variables_to_build"], df)
         dset[processName] = df
-
-
+        
+#####################################################
 # define training dataa
-n_vars = len(training_variables)
-x_train_vbf = dset["VBF"][training_variables]
+n_vars = len(cfg["training_variables"])
+x_train_vbf = dset["VBF"][cfg["training_variables"]]
 y_train_vbf = pd.Series(1, index=dset["VBF"].index)
-x_train_top = dset["Top"][training_variables]
+x_train_top = dset["Top"][cfg["training_variables"]]
 y_train_top = pd.Series(0, index=dset["Top"].index)
 x_train = x_train_vbf.append(x_train_top).values
 y_train = y_train_vbf.append(y_train_top).values

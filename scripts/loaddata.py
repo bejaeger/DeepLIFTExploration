@@ -1,6 +1,26 @@
 import numpy as np
 import pandas as pd
 import uproot
+import configparser
+
+def readCfg(configPath, section = "train"):
+    """
+    Read config file into dictionary (customized)
+    """
+    cfg = {}
+    config = configparser.ConfigParser()
+    config.read("config.cfg")
+    cfg["nEvents"] =  int(config[section]["nEvents"])
+    samplePaths = {}
+    cfg["samples"] = config["common"]["samples"].split(",")
+    for s in cfg["samples"]:
+        samplePaths[s] = config["common"]["filepath{}".format(s)]
+    cfg["samplePaths"] = samplePaths
+    cfg["variables"] = config["common"]["variables"].split(",")
+    cfg["variables_to_build"] = config["common"]["variables_to_build"].split(",")
+    cfg["training_variables"] = config["common"]["training_variables"].split(",")
+    cfg["selections"] = [i[1].split(",") for i in config["selections"].items()]
+    return cfg
 
 def loadData(filepath, variables, selections = [[]],
              nEvents = -1, treename = "mini"):
