@@ -16,7 +16,7 @@ RUN mv mc_* atlas-open-data
 
 # Install some necessary software
 RUN pip install --upgrade pip setuptools && \
-     pip install tensorflow && \
+    pip install tensorflow==1.13.1 && \
     pip install keras && \
     pip install uproot && \
     pip install matplotlib && \
