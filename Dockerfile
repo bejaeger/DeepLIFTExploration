@@ -19,6 +19,7 @@ RUN pip install --upgrade pip setuptools && \
     pip install tensorflow==1.13.1 && \
     pip install keras && \
     pip install uproot && \
+    pip install talos && \
     pip install matplotlib && \
     pip install pandas && \
     pip install atlasify && \ 
