@@ -1,2 +1,5 @@
 atlas-open-data/
 output
+scripts/__pycache__/
+.DS_Store
+
