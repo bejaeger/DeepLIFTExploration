@@ -6,18 +6,27 @@ from variables import *
 
 def getDataInDict(cfg, section = "train"):
     """
-    retrieve training data in dictionary 
+    Retrieve training data in dictionary 
     """
     dset = {}
-    for processName, filepath in cfg["samplePaths"].items():
-        if filepath:
-            print("Loading data for process '{}' from filepath '{}' " \
-                  "".format(processName,filepath))
-            df = loadData(filepath, cfg["variables"], selections = cfg["preselections"],
-                          nEvents = cfg["nEvents"])
-            df = addVariables(df, cfg["variables_to_build"])
-            df = makeSelections(df, cfg["selections"])
-            dset[processName] = df
+    if "filepathData" in cfg.keys():
+        filepath = cfg["filepathData"]
+        print("INFO: Loading data for process from filepath '{}' ".format(cfg["filepathData"]))
+        df = loadData(filepath, cfg["variables"], selections = cfg["preselections"],
+                      nEvents = cfg["nEvents"])
+        df = addVariables(df, cfg["variables_to_build"])
+        df = makeSelections(df, cfg["selections"])
+        dset["Data"] = df
+    else:
+        for processName, filepath in cfg["samplePaths"].items():
+            if filepath:
+                print("INFO: Loading data for process '{}' from filepath '{}' " \
+                      "".format(processName,filepath))
+                df = loadData(filepath, cfg["variables"], selections = cfg["preselections"],
+                              nEvents = cfg["nEvents"])
+                df = addVariables(df, cfg["variables_to_build"])
+                df = makeSelections(df, cfg["selections"])
+                dset[processName] = df
 
     return dset
 
@@ -28,6 +37,7 @@ def readCfg(configPath, section = "train"):
     cfg = {}
     config = configparser.ConfigParser()
     config.read("config.cfg")
+    cfg["section"] = section
     cfg["nEvents"] =  int(config[section]["nEvents"])
     samplePaths = {}
     cfg["samples"] = config["common"]["samples"].split(",")
@@ -39,14 +49,21 @@ def readCfg(configPath, section = "train"):
     cfg["training_variables"] = config["common"]["training_variables"].split(",")
     cfg["preselections"] = [i[1].split(",") for i in config["preselections"].items()]
     cfg["selections"] = [i[1].split(",") for i in config["selections"].items()]
+    cfg["standardize"] = config[section]["standardize"].lower() in ["true", "1", "y"]
     if section == "train":
-        cfg["trainingFraction"] = config[section]["trainingFraction"]
+        cfg["nEpochs"] = config[section]["nEpochs"]
+    if section == "analyze":
+        cfg["modelPath"] = config[section]["modelPath"]
+        cfg["scalerPath"] = config[section]["scalerPath"]
+        cfg["referenceMode"] = config[section]["referenceMode"]
+        if "filepathData" in config["analyze"].keys():
+            cfg["filepathData"] = config[section]["filepathData"]
     return cfg
 
 def loadData(filepath, variables, selections = [[]],
              nEvents = -1, treename = "mini"):
     """
-    opens root file located at 'filepath' (string), converts ROOT's TTree 
+    Open root file located at 'filepath' (string), converts ROOT's TTree 
     format to a pandas dataframe including all 'variables' 
     (list of strings), and returns it.
     Selections can be applied by providing a list 'selections'  in the 
@@ -80,14 +97,14 @@ def loadData(filepath, variables, selections = [[]],
 
 def _getTTree(filepath, treename):
     """
-    returns TTree with name 'treename' in root file at 'filepath'
+    Return TTree with name 'treename' in root file at 'filepath'
     """
     f = uproot.open(filepath)
     return f[treename]
     
 def _mergeVariableLists(variables, selections):
     """
-    helper function to figure out which variables are only used for 
+    Helper function to figure out which variables are only used for 
     making selections
     """
     vars_for_selection = [e[0] for e in selections if len(e) > 0]

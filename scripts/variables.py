@@ -47,8 +47,12 @@ class VariableConstructor:
     def Mll(self, df):
         # M2 = 2 * pt1 * pt2 * ( cosh( eta1-eta2 ) - cos( phi1-phi2) )
         lepton_pt = np.array(list(map(list, df["lep_pt"])))
+        # the following line seems to be necessary for data, don't know whay :(
+        lepton_pt = np.array([[l[0], l[1]] for l in lepton_pt])
         lepton_eta = np.array(list(map(list, df["lep_eta"])))
+        lepton_eta = np.array([[l[0], l[1]] for l in lepton_eta])
         lepton_phi = np.array(list(map(list, df["lep_phi"])))
+        lepton_phi = np.array([[l[0], l[1]] for l in lepton_phi])
         prodPt = np.prod(lepton_pt, axis=1)
         diffEta = -np.diff(lepton_eta, axis=1).T.flatten() 
         diffPhi = -np.diff(lepton_phi, axis=1).T.flatten()
@@ -59,8 +63,10 @@ class VariableConstructor:
     def PtTotal(self, df):
         # summed pT of objects
         lepton_pt = np.array(list(map(list, df["lep_pt"])))
+        lepton_pt = np.array([[l[0], l[1]] for l in lepton_pt])
         sumPtLep = np.sum(lepton_pt, axis=1)
         jet_pt = np.array(list(map(list, df["jet_pt"])))
+        jet_pt = np.array([[l[0], l[1]] for l in jet_pt])
         sumPtJet = np.sum(jet_pt, axis=1)
         data = sumPtLep + sumPtJet
         df = pd.DataFrame(data, columns=["PtTotal"])
@@ -93,6 +99,7 @@ class VariableConstructor:
     
     
 def buildVariable(df, name):
+    print("building variable {}...".format(name))
     constructor = VariableConstructor()
     func = getattr(constructor, name)
     df_var = func(df)

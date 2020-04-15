@@ -24,13 +24,35 @@ cfg = readCfg("config.cfg", section="train")
 dset = getDataInDict(cfg)
 
 #####################################################
+# Preprocessing  Standardize
+
+# I/O to dump scaler
+outfilepath = os.path.join(getOutputDir(), "training")
+mkdir_p(outfilepath)
+
+if cfg["standardize"]:
+    print("INFO: Standardizing inputs...")
+    scaler = preprocessing.StandardScaler(copy=False)
+    vars = cfg["training_variables"]
+    allEvents = dset["VBF"][vars].append(dset["Top"][vars])
+    if "WW" in cfg["samples"]:
+        allEvents = allEvents.append(dset["WW"][vars])
+    scaler.fit(allEvents)
+    dset["VBF"][vars] = scaler.transform(dset["VBF"][vars])
+    dset["Top"][vars] = scaler.transform(dset["Top"][vars])
+    if "WW" in cfg["samples"]:
+        dset["WW"][vars] = scaler.transform(dset["WW"][vars])
+    pickle.dump(scaler, open(os.path.join(outfilepath, "scaler.pkl"), "wb"))
+
+#####################################################
 # define training and test data
 n_vars = len(cfg["training_variables"])
 
-n_train_events_vbf = int(dset["VBF"].shape[0] * float(cfg["trainingFraction"]))
-n_train_events_top = int(dset["Top"].shape[0] * float(cfg["trainingFraction"]))
+trainingFraction = 0.8
+n_train_events_vbf = int(dset["VBF"].shape[0] * trainingFraction)
+n_train_events_top = int(dset["Top"].shape[0] * trainingFraction)
 if "WW" in cfg["samples"]:
-    n_train_events_ww = int(dset["WW"].shape[0] * float(cfg["trainingFraction"]))
+    n_train_events_ww = int(dset["WW"].shape[0] * trainingFraction)
 
 x_train_vbf = dset["VBF"][cfg["training_variables"]][0:n_train_events_vbf]
 y_train_vbf = pd.Series(1, index=dset["VBF"][0:n_train_events_vbf].index)
@@ -58,8 +80,10 @@ x_test = x_test_vbf.append(x_test_top).values
 y_test = y_test_vbf.append(y_test_top).values
 
 n_train_events = x_train.shape[0]
-weight_vbf = 0.02 * n_train_events / n_train_events_vbf
-weight_top = 0.5 * n_train_events / n_train_events_top
+weight_vbf = 0.1 * n_train_events / n_train_events_vbf
+weight_top = 0.9 * n_train_events / n_train_events_top
+if "WW" in cfg["samples"]:
+    weight_top = 0.5 * n_train_events / n_train_events_top
 sample_weight_vbf = pd.Series(weight_vbf, index=dset["VBF"][0:n_train_events_vbf].index)
 sample_weight_top = pd.Series(weight_top, index=dset["Top"][0:n_train_events_top].index)
 sample_weight = sample_weight_vbf.append(sample_weight_top)
@@ -76,21 +100,10 @@ print("sample weight top: {}".format(weight_top))
 if "WW" in cfg["samples"]:
     print("sample weight WW: {}".format(weight_ww))
 
-# I/O
-outfilepath = os.path.join(getOutputDir(), "training")
-mkdir_p(outfilepath)
-
-############################################################
-# Preprocessing
-scaler = preprocessing.StandardScaler(copy=False)
-scaler.fit(x_train)
-x_train = scaler.transform(x_train)
-pickle.dump(scaler, open(os.path.join(outfilepath, "scaler.pkl"), "wb"))
-
 ############################################################
 # define the keras model
 model = Sequential()
-model.add(Dense(32, input_dim=n_vars,  kernel_regularizer=regularizers.l2(0.01), activation='relu', name="dense_0"))
+model.add(Dense(32, input_dim=n_vars, activation='relu', name="dense_0"))
 # model.add(Dense(32, activation='relu', name="dense_1"))
 model.add(Dense(16, activation='relu', name="dense_2"))
 model.add(Dropout(0.01))
@@ -101,24 +114,16 @@ model.add(Dense(1, activation='sigmoid', name="output"))
 # compile the keras model
 # loss, logcosh
 model.compile(loss='binary_crossentropy',
-              optimizer='adam',
+              optimizer='adagrad',
               metrics = [metrics.binary_accuracy])
 
 ############################################################
 # training settings
-nEpochs = 80
 batchsize = 256
-#32
 shuffle = True
-learning_rate = 0.01
-#early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=30)
-
+# keras.optimizers.Adam(learning_rate=0.1)
 reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.02, patience=10)
-# fit the keras model on the dataset
-# keras.optimizers.Adagrad(learning_rate=learning_rate, epsilon=None, decay=0.0)
-#keras.optimizers.SGD(learning_rate=learning_rate)
-# keras.optimizers.Adam(learning_rate=learning_rate)
-history = model.fit(x_train, y_train, epochs=nEpochs,
+history = model.fit(x_train, y_train, epochs=int(cfg["nEpochs"]),
                     batch_size=batchsize,
                     validation_split=0.2, shuffle=shuffle,
                     sample_weight = sample_weight,
@@ -166,16 +171,16 @@ pred_vbf_test = model.predict(x_test_vbf.values, batch_size=batchsize)
 pred_top_test = model.predict(x_test_top.values, batch_size=batchsize)
 
 nbins = 40
-ylabel = "Number of Events"
+ylabel = "Normalized Number of Events"
 alpha = 0.6
 normalize = True
 ATLASlabel = ["Open Data", "$\sqrt{s} = 13\,\mathrm{TeV}$, $10\,\mathrm{fb}^{-1}$ \n H$\\rightarrow$WW, 2 leptons, 2 jets \n"]
 
-processes = ["VBF", "Top"] #, "VBF", "Top"]
-pred_data = [pred_vbf, pred_top] #, pred_vbf_test, pred_top_test]
-labels = ["Signal Process (Higgs)", "Bkg Process (Top)"] #, "Test", "Test"]
-histtype = ["bar" , "bar"] #, "step", "step"]
-colors = ["red", "orange"]#, "red", "orange"]
+processes = ["VBF", "Top"]
+pred_data = [pred_vbf, pred_top]
+labels = ["Signal Training Sample", "Background Training Sample"]
+histtype = ["bar" , "bar"]
+colors = ["red", "orange"]
 
 for iproc, proc in enumerate(processes):
     plt.hist(pred_data[iproc], nbins,
@@ -185,17 +190,26 @@ for iproc, proc in enumerate(processes):
              # weights=weights[iproc],
              histtype=histtype[iproc],
              label=labels[iproc])
-    
+
 pred_data_test = [pred_vbf_test, pred_top_test] #, pred_vbf_test, pred_top_test]
+labels_test = ["Signal Test Sample", "Background Test Sample"] #, pred_vbf_test, pred_top_test]
 for itest, dat in enumerate(pred_data_test):
     x_test, y_test, yerr_test, norm_test = histpoints(dat, nbins,
                                                       yerr = "sqrt", normed = normalize)
-    plt.plot(x_test, y_test, 'o', color=colors[itest], markersize=4)
+    if itest == 0:
+        savextest = x_test
+    if itest == 1:
+        x_test = savextest
+    plt.plot(x_test, y_test, 'o', color=colors[itest], markersize=4, \
+             label = labels_test[itest])
+    plt.errorbar(x_test, y_test, fmt='none', yerr=yerr_test, ecolor=colors[itest])
+    
 
 #plt.ylim(bottom=0.00001) 
 plt.xlabel("Network Output")
 plt.ylabel(ylabel)
 plt.yscale("log")
+plt.ylim(0.001, 1000)
 atlasify(ATLASlabel[0], ATLASlabel[1])
 outfilename = "network_output.png"
 plt.savefig(os.path.join(outfilepath, outfilename), dpi=360)
