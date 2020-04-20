@@ -24,3 +24,18 @@ cd scripts
 ./visualize.py
 # this produces distributions of the input variables used in the DNN training in a new directory called 'output/'.
 ```
+
+
+
+1) MNIST subfolder
+
+mnist_original_cnn.py - trains a CNN with parameters identical to original DeepLIFT paper and saves model into mnist_my_cnn_model.h5
+mist_modified_cnn.py - trains a CNN with modified architecture (see report) and saves model into mnist_my_cnn_model.h5 (included)
+mnist_test.py - runs DeepLIFT on the model in mnist_my_cnn_model.h5 and produces plots as in original DeepLIFT paper
+
+2) Two Moons subfolder
+
+TwoMoonsModel.h5 - trained model for Two Moons classfication (see report)
+
+two_moons.py - traines a simple NN for Two Moons classification and runs DeepLIFT. Produces plots in report.
+TwoMoonsTest.ipynb - notebook version
