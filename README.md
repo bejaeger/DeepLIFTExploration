@@ -1,6 +1,7 @@
 # DeepLIFTforHEP
 
-Code repository for the CMPT726 project in Spring 2020
+Code repository for the CMPT726 project in Spring 2020.
+Docker needs to be installed to be able to run the analysis of the ATLAS Open Data. 
 
 # Quick Start
 
