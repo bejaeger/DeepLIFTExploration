@@ -24,7 +24,7 @@ For running the analysis on the ATLAS Open Data a docker image needs to be downl
 # In the main DeepLIFTforHEP directory:
 source setup.sh # defines a few aliases and env variables
 # pull docker image uploaded docker image
-pullimg # pull latest container from gitlab
+pullimg # pull latest container from gitlab with ATLAS Open Data included (takes a while)
 # this runs the alias: 'docker pull gitlab-registry.cern.ch/bejaeger/deepliftforhep'
 # you might need to execute docker as superuser with sudo: 'sudo docker ...'
 runcont # runs the container
@@ -36,13 +36,12 @@ cd ATLAS #
 ./visualize.py # run script to produce plots as an example
 ```
 
-### scripts
-#### main scripts
+#### Main scripts
 `visualize.py`: produces plots of the input variable distributions in a new directory called 'output/'      
 `train.py`: trains an NN to classify signal and background events          
 `analyze.py`: applies DeepLIFT to the trained NN and saves plots of importances scores         
 
-#### helper scripts
+#### Helper files/modules
 `config.cfg`: settings for the main scripts         
 `plot.py`: plot helpers         
 `helper.py`: miscellaneous helper functions           
