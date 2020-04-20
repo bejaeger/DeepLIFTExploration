@@ -1,16 +1,28 @@
 # DeepLIFTforHEP
 
-Code repository for the CMPT726 project in Spring 2020.
-Docker needs to be installed to be able to run the analysis of the ATLAS Open Data. 
+Code repository for the SFU CMPT726 project in Spring 2020.
+An exploration of the [DeepLIFT](https://github.com/kundajelab/deeplift) (Deep Learning Important FeaTures) algorithm in three steps.
 
-# Quick Start
+## MNIST subfolder
 
+`mnist_original_cnn.py`: trains a CNN with parameters identical to original DeepLIFT paper and saves model into mnist_my_cnn_model.h5     
+`mist_modified_cnn.py:` trains a CNN with modified architecture (see report) and saves model into mnist_my_cnn_model.h5 (included)     
+`mnist_test.py`: runs DeepLIFT on the model in mnist_my_cnn_model.h5 and produces plots as in original DeepLIFT paper     
+
+## Two Moons subfolder
+
+`TwoMoonsModel.h5`: trained model for Two Moons classfication (see report)
+
+`two_moons.py`: traines a simple NN for Two Moons classification and runs DeepLIFT. Produces plots in report.
+`TwoMoonsTest.ipynb`: notebook version
+
+## ATLAS subfolder
+For running the analysis on the ATLAS Open Data a docker image needs to be downloaded
+
+### Download and run the docker image
 ```bash
-# clone gitlab repository 
-git clone https://gitlab.cern.ch/bejaeger/DeepLIFTforHEP.git
-cd DeepLIFTforHEP
+# In the main DeepLIFTforHEP directory:
 source setup.sh # defines a few aliases and env variables
-
 # pull docker image uploaded docker image
 pullimg # pull latest container from gitlab
 # this runs the alias: 'docker pull gitlab-registry.cern.ch/bejaeger/deepliftforhep'
@@ -18,24 +30,22 @@ pullimg # pull latest container from gitlab
 runcont # runs the container
 # this runs the alias: 'docker run --rm -it -v $PWD:/home/DeepLIFTforHEP gitlab-registry.cern.ch/bejaeger/deepliftforhep:latest /bin/bash'
 
-# inside container, run visualize script
+# inside container you have to manually source the setup.sh again
 source setup.sh # manually sourcing is currently still needed
-cd scripts
-./visualize.py
-# this produces distributions of the input variables used in the DNN training in a new directory called 'output/'.
+cd ATLAS #
+./visualize.py # run script to produce plots as an example
 ```
 
+### scripts
+#### main scripts
+`visualize.py`: produces plots of the input variable distributions in a new directory called 'output/'      
+`train.py`: trains an NN to classify signal and background events          
+`analyze.py`: applies DeepLIFT to the trained NN and saves plots of importances scores         
 
+#### helper scripts
+`config.cfg`: settings for the main scripts         
+`plot.py`: plot helpers         
+`helper.py`: miscellaneous helper functions           
+`loaddata.py`: functions for I/O        
+`variables.py`: class and functions to modify/constructinput variables        
 
-1) MNIST subfolder
-
-mnist_original_cnn.py - trains a CNN with parameters identical to original DeepLIFT paper and saves model into mnist_my_cnn_model.h5
-mist_modified_cnn.py - trains a CNN with modified architecture (see report) and saves model into mnist_my_cnn_model.h5 (included)
-mnist_test.py - runs DeepLIFT on the model in mnist_my_cnn_model.h5 and produces plots as in original DeepLIFT paper
-
-2) Two Moons subfolder
-
-TwoMoonsModel.h5 - trained model for Two Moons classfication (see report)
-
-two_moons.py - traines a simple NN for Two Moons classification and runs DeepLIFT. Produces plots in report.
-TwoMoonsTest.ipynb - notebook version
