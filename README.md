@@ -17,9 +17,8 @@ An exploration of the [DeepLIFT](https://github.com/kundajelab/deeplift) (Deep L
 `TwoMoonsTest.ipynb`: notebook version
 
 ## ATLAS subfolder
-For running the analysis on the ATLAS Open Data a docker image needs to be downloaded
 
-### Download and run the docker image
+For running the analysis of the ATLAS Open Data a docker image needs to be downloaded:
 ```bash
 # In the main DeepLIFTforHEP directory:
 source setup.sh # defines a few aliases and env variables
