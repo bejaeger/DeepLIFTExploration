@@ -77,5 +77,5 @@ score = model.evaluate(x_test, y_test, verbose=0)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 
-model.save('C:/Users/adamb/Desktop/Python/deeplift/examples/mnist/mnist_my_cnn_model.h5')  # creates a HDF5 file 'my_model.h5'
+model.save('mnist_my_cnn_model.h5')  # creates a HDF5 file 'my_model.h5'
 model.summary()
